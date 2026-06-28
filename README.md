@@ -12,6 +12,7 @@ sudo pecl install swoole
 
 ```bash
 git clone https://github.com/teeframe/teeframe.git
+cd teeframe
 ```
 
 ## Install composer dependencies
