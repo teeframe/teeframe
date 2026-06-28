@@ -1,0 +1,27 @@
+{
+    "name": "teeframe/teeframe",
+    "type": "project",
+    "description": "A TeeFrame game server.",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "repositories": [
+      {
+          "type": "vcs",
+          "url": "https://github.com/teeframe/framework.git"
+      }
+    ],
+    "require": {
+        "teeframe/framework": "dev-main"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
