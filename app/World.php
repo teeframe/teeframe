@@ -4,8 +4,11 @@ namespace App;
 
 use TeeFrame\Core\TickHandler;
 use TeeFrame\Game\AbstractWorld;
+use TeeFrame\Game\Entities\Character\AbstractCharacterEntity;
+use TeeFrame\Game\Entities\Character\PvpCharacterEntity;
 use TeeFrame\Game\Tees\AbstractTee;
 use TeeFrame\Game\World\PickupSpawner;
+use TeeFrame\Game\World\Vector2;
 use TeeFrame\Map\Map;
 use TeeFrame\Map\MapLayers\GameLayer;
 use TeeFrame\Server\AbstractServerInstance;
@@ -31,6 +34,11 @@ class World extends AbstractWorld
     protected function bootGameController(): void
     {
         $this->gameController = new GameController($this->tickHandler);
+    }
+
+    protected function getNewCharacterEntity(Vector2 $position): AbstractCharacterEntity
+    {
+        return new PvpCharacterEntity($this, $position);
     }
 
     public function getMotd(AbstractTee $requestingTee): string
