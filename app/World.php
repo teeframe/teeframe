@@ -4,6 +4,9 @@ namespace App;
 
 use TeeFrame\Core\TickHandler;
 use TeeFrame\Game\AbstractWorld;
+use TeeFrame\Game\Commands\ChangeGameModeCommand;
+use TeeFrame\Game\Commands\ChangeMapCommand;
+use TeeFrame\Game\Commands\ReloadCommand;
 use TeeFrame\Game\Entities\Character\AbstractCharacterEntity;
 use TeeFrame\Game\Entities\Character\PvpCharacterEntity;
 use TeeFrame\Game\Tees\AbstractTee;
@@ -20,9 +23,31 @@ class World extends AbstractWorld
     public function __construct(
         public string $identifier,
         protected TickHandler $tickHandler,
-        protected AbstractServerInstance $server
+        protected AbstractServerInstance $server,
+        int $slotsLimit,
     ) {
-        parent::__construct($identifier, $tickHandler, new Map('maps/dm1.map'), $server);
+        parent::__construct($identifier, $tickHandler, new Map('maps/dm1.map'), $server, $slotsLimit);
+
+        foreach (['dm1', 'ctf1'] as $mapName) {
+            $command = new ChangeMapCommand($mapName);
+            $this->registerCommand($command);
+            $this->getVoteController()->addVoteOption($command->getDescription(), $command->getCommand());
+        }
+
+        foreach (['dm', 'tdm', 'ctf'] as $gameMode) {
+            $command = new ChangeGameModeCommand($gameMode, mapName: $gameMode === 'ctf' ? 'ctf1' : null);
+            $this->registerCommand($command);
+            $this->getVoteController()->addVoteOption($command->getDescription(), $command->getCommand());
+        }
+
+        $command = new ReloadCommand;
+        $this->registerCommand($command);
+        $this->getVoteController()->addVoteOption($command->getDescription(), $command->getCommand());
+    }
+
+    protected function bootMap(): void
+    {
+        parent::bootMap();
 
         $gameLayer = $this->getMap()->getGameLayer();
 
@@ -43,7 +68,7 @@ class World extends AbstractWorld
 
     public function getMotd(AbstractTee $requestingTee): string
     {
-        return 'Welcome to TeeFrame DM!';
+        return 'Welcome to TeeFrame '.$this->getGameController()->getGameType().'!';
     }
 
     /**

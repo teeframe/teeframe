@@ -13,7 +13,7 @@ class GameServer extends AbstractServerInstance
 {
     protected function boot(): void
     {
-        $this->worlds[] = new World('dm1', $this->tickHandler, $this);
+        $this->worlds[] = new World('dm1', $this->tickHandler, $this, slotsLimit: 64);
 
         $this->sockets[] = new UdpSocket('0.0.0.0', 8304);
     }
@@ -24,6 +24,10 @@ class GameServer extends AbstractServerInstance
     }
 }
 
-$server = new GameServer(new TickHandler);
+$server = new GameServer(
+    tickHandler: new TickHandler,
+    name: 'TeeFrame',
+    registerOnMasterServer: true,
+);
 
 $server->start();
