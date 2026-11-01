@@ -4,9 +4,7 @@ namespace App;
 
 use TeeFrame\Core\TickHandler;
 use TeeFrame\Game\AbstractWorld;
-use TeeFrame\Game\Commands\ChangeGameModeCommand;
-use TeeFrame\Game\Commands\ChangeMapCommand;
-use TeeFrame\Game\Commands\ReloadCommand;
+
 use TeeFrame\Game\Entities\Character\AbstractCharacterEntity;
 use TeeFrame\Game\Entities\Character\PvpCharacterEntity;
 use TeeFrame\Game\Tees\AbstractTee;
@@ -28,21 +26,19 @@ class World extends AbstractWorld
     ) {
         parent::__construct($identifier, $tickHandler, new Map('maps/dm1.map'), $server, $slotsLimit);
 
+
         foreach (['dm1', 'ctf1'] as $mapName) {
-            $command = new ChangeMapCommand($mapName);
-            $this->registerCommand($command);
-            $this->getVoteController()->addVoteOption($command->getDescription(), $command->getCommand());
+            $this->getVoteController()->addVoteOption('Change map to '.$mapName, 'change_map '.$mapName);
         }
 
         foreach (['dm', 'tdm', 'ctf'] as $gameMode) {
-            $command = new ChangeGameModeCommand($gameMode, mapName: $gameMode === 'ctf' ? 'ctf1' : null);
-            $this->registerCommand($command);
-            $this->getVoteController()->addVoteOption($command->getDescription(), $command->getCommand());
+            $this->getVoteController()->addVoteOption(
+                'Change gamemode to '.strtoupper($gameMode),
+                'change_gamemode '.$gameMode.($gameMode === 'ctf' ? ' ctf1' : ''),
+            );
         }
 
-        $command = new ReloadCommand;
-        $this->registerCommand($command);
-        $this->getVoteController()->addVoteOption($command->getDescription(), $command->getCommand());
+        $this->getVoteController()->addVoteOption('Reload', 'reload');
     }
 
     protected function bootMap(): void
