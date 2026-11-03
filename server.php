@@ -11,7 +11,7 @@ use TeeFrame\Server\Config\WorldConfig;
 
 $server = new class(
     tickHandler: new TickHandler,
-    config: __DIR__.'/server.cfg',
+    config: __DIR__.'/config.cfg',
     activatePvpSettings: true,
 ) extends AbstractServerInstance
 {
