@@ -1,7 +1,7 @@
 {
     "name": "teeframe/teeframe",
     "type": "project",
-    "description": "A TeeFrame game server.",
+    "description": "Boilerplate to use the TeeFrame game server with ease.",
     "license": "MIT",
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -18,10 +18,5 @@
     ],
     "require": {
         "teeframe/framework": "dev-main"
-    },
-    "config": {
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
     }
 }
