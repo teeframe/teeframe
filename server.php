@@ -7,27 +7,18 @@ use App\World;
 use TeeFrame\Core\TickHandler;
 use TeeFrame\Game\AbstractWorld;
 use TeeFrame\Server\AbstractServerInstance;
-use TeeFrame\Server\Sockets\UdpSocket;
+use TeeFrame\Server\Config\WorldConfig;
 
-class GameServer extends AbstractServerInstance
-{
-    protected function boot(): void
-    {
-        $this->worlds[] = new World('dm1', $this->tickHandler, $this, slotsLimit: 64);
-
-        $this->sockets[] = new UdpSocket('0.0.0.0', 8304);
-    }
-
-    protected function selectWorldForNewConnection(): AbstractWorld
-    {
-        return $this->worlds[0];
-    }
-}
-
-$server = new GameServer(
+$server = new class(
     tickHandler: new TickHandler,
-    name: 'TeeFrame',
-    registerOnMasterServer: true,
-);
+    config: __DIR__.'/server.cfg',
+    activatePvpSettings: true,
+) extends AbstractServerInstance
+{
+    protected function createWorld(WorldConfig $config): AbstractWorld
+    {
+        return new World($config, $this->tickHandler, $this);
+    }
+};
 
 $server->start();

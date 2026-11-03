@@ -2,43 +2,55 @@
 
 namespace App;
 
+use App\Commands\Server\LockTeamsCommand;
+use App\Commands\Server\RestartCommand;
+use App\Commands\Server\SetTeamAllCommand;
+use App\Commands\Server\SetTeamCommand;
+use App\Commands\Server\ShuffleTeamsCommand;
+use App\Commands\Server\SwapTeamsCommand;
 use TeeFrame\Core\TickHandler;
 use TeeFrame\Game\AbstractWorld;
-
 use TeeFrame\Game\Entities\Character\AbstractCharacterEntity;
 use TeeFrame\Game\Entities\Character\PvpCharacterEntity;
-use TeeFrame\Game\Tees\AbstractTee;
+
 use TeeFrame\Game\World\PickupSpawner;
 use TeeFrame\Game\World\Vector2;
 use TeeFrame\Map\Map;
 use TeeFrame\Map\MapLayers\GameLayer;
 use TeeFrame\Server\AbstractServerInstance;
+use TeeFrame\Server\Config\WorldConfig;
 
 class World extends AbstractWorld
 {
     protected GameController $dmController;
 
     public function __construct(
-        public string $identifier,
-        protected TickHandler $tickHandler,
-        protected AbstractServerInstance $server,
-        int $slotsLimit,
+        WorldConfig $config,
+        TickHandler $tickHandler,
+        AbstractServerInstance $server,
     ) {
-        parent::__construct($identifier, $tickHandler, new Map('maps/dm1.map'), $server, $slotsLimit);
+        parent::__construct(
+            $config->identifier,
+            $tickHandler,
+            new Map(__DIR__.'/../maps/'.$config->settings->getString('sv_world_map').'.map'),
+            $server,
+            slotsLimit: $config->slotsLimit,
+            config: $config->settings,
+            spectatorSlots: $config->spectatorSlots,
+        );
 
+    }
 
-        foreach (['dm1', 'ctf1'] as $mapName) {
-            $this->getVoteController()->addVoteOption('Change map to '.$mapName, 'change_map '.$mapName);
-        }
+    protected function bootCommands(): void
+    {
+        parent::bootCommands();
 
-        foreach (['dm', 'tdm', 'ctf'] as $gameMode) {
-            $this->getVoteController()->addVoteOption(
-                'Change gamemode to '.strtoupper($gameMode),
-                'change_gamemode '.$gameMode.($gameMode === 'ctf' ? ' ctf1' : ''),
-            );
-        }
-
-        $this->getVoteController()->addVoteOption('Reload', 'reload');
+        $this->registerCommand(new RestartCommand);
+        $this->registerCommand(new SetTeamCommand);
+        $this->registerCommand(new SetTeamAllCommand);
+        $this->registerCommand(new SwapTeamsCommand);
+        $this->registerCommand(new ShuffleTeamsCommand);
+        $this->registerCommand(new LockTeamsCommand);
     }
 
     protected function bootMap(): void
@@ -57,14 +69,9 @@ class World extends AbstractWorld
         $this->gameController = new GameController($this->tickHandler);
     }
 
-    protected function getNewCharacterEntity(Vector2 $position): AbstractCharacterEntity
+    protected function createCharacterEntity(Vector2 $position): AbstractCharacterEntity
     {
         return new PvpCharacterEntity($this, $position);
-    }
-
-    public function getMotd(AbstractTee $requestingTee): string
-    {
-        return 'Welcome to TeeFrame '.$this->getGameController()->getGameType().'!';
     }
 
     /**
@@ -73,12 +80,12 @@ class World extends AbstractWorld
     private static function respawnTimes(): array
     {
         return [
-            GameLayer::ENTITY_HEALTH_1      => 1750, // ~35s
-            GameLayer::ENTITY_ARMOR_1       => 1250, // ~25s
+            GameLayer::ENTITY_HEALTH_1       => 1750, // ~35s
+            GameLayer::ENTITY_ARMOR_1        => 1250, // ~25s
             GameLayer::ENTITY_WEAPON_SHOTGUN => 250,  // ~5s
             GameLayer::ENTITY_WEAPON_GRENADE => 250,
-            GameLayer::ENTITY_WEAPON_RIFLE  => 250,
-            GameLayer::ENTITY_POWERUP_NINJA => 3000, // ~60s
+            GameLayer::ENTITY_WEAPON_RIFLE   => 250,
+            GameLayer::ENTITY_POWERUP_NINJA  => 3000, // ~60s
         ];
     }
 
